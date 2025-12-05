@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import type { PersistenceOptions } from 'pinia-plugin-persistedstate'
 import Token from '@/utils/token'
+import { login, logout } from '@/api/generalApi'
 
 interface UserInfo {
   id: string
@@ -113,16 +114,18 @@ export const useAccountStore = defineStore('user', {
           },
         ],
       }
-      this.init(dataInfo)
-      const tokenInfo = { token: `${userInfo.username} - ${Date.now()}` }
-      Token.set(tokenInfo)
-      return !!params
+      const { data } = await login(params)
+      if (data.code === 200) {
+        this.init(dataInfo)
+        return true
+      }
+      return false
     },
 
     async logout(): Promise<boolean> {
-      const res = { code: 1 } // 临时模拟接口返回，实际替换为真实请求
+      const res = await logout()
 
-      if (res.code === 1) {
+      if (res) {
         this.userInfo = { id: '', name: '', accountNum: '' }
         this.breadcrumbRecord = [{ label: '首页', path: '/dashboard', closable: false }]
         this.permissionList = []

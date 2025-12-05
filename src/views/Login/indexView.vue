@@ -68,7 +68,7 @@ const isCanLogin = computed<boolean>(() => {
 })
 
 const handleLogin = async () => {
-  if (loginForm.value.username === 'admin' && loginForm.value.password === '1') {
+  if (loginForm.value.username && loginForm.value.password) {
     const res = await accountStore.login({
       username: loginForm.value.username,
       password: loginForm.value.password,

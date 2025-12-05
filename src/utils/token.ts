@@ -1,59 +1,26 @@
-const TOKEN_KEY = 'X-Dipal-Token'
-
-interface TokenInfo {
-  token: string
-  // exp: number
-}
+import Cookies from 'js-cookie'
+const TOKEN_KEY = 'AUTH_TOKEN'
 
 class Token {
-  private token: TokenInfo | null
+  private token: string | null
 
   constructor() {
-    this.token = this.getTokenFromStorage()
+    this.token = this.get()
   }
 
-  private getTokenFromStorage(): TokenInfo | null {
-    try {
-      const storedToken = localStorage.getItem(TOKEN_KEY)
-      if (!storedToken) return null
-
-      return JSON.parse(storedToken) as TokenInfo
-    } catch (error) {
-      console.error('解析令牌失败：', error)
-      this.remove()
-      return null
-    }
+  get() {
+    return Cookies.get(TOKEN_KEY) || null
   }
-
-  get(): TokenInfo | null {
-    this.token = this.getTokenFromStorage()
-    return this.token
-  }
-
-  getTokenStr(): string {
-    return this.get()?.token || ''
-  }
-
-  // expired(): boolean {
-  //   const currentToken = this.get()
-  //   if (!currentToken) return true
-  //   if (currentToken.exp === undefined) return true
-  //   return Date.now() > currentToken.exp * 1000
+  // expired() {
+  //   if (this.token) {
+  //     return Date.now() > this.token?.exp * 1000
+  //   }
+  //   return true
   // }
-
-  set(tokenInfo: TokenInfo): void {
-    try {
-      localStorage.setItem(TOKEN_KEY, JSON.stringify(tokenInfo))
-      this.token = tokenInfo
-    } catch (error) {
-      console.error('存储令牌失败：', error)
-    }
+  remove() {
+    Cookies.remove(TOKEN_KEY)
   }
-
-  remove(): void {
-    localStorage.removeItem(TOKEN_KEY)
-    this.token = null
-  }
+  set() {}
 }
 
 export default new Token()
