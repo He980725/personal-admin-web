@@ -83,7 +83,8 @@ const handleMenuSelect = async (key: string) => {
 }
 
 let observer: MutationObserver | null = null
-onMounted(() => {
+onMounted(async () => {
+  await accountStore.getRouterPermissionList()
   if (menuBoxRef.value) {
     observer = new MutationObserver(async () => {
       await nextTick()

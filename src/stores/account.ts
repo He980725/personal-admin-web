@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import type { PersistenceOptions } from 'pinia-plugin-persistedstate'
 import Token from '@/utils/token'
-import { login, logout } from '@/api/generalApi'
+import { login, logout, getMenuOption } from '@/api/generalApi'
+import type { MenuTree } from '@/axios/responseType'
 
 interface UserInfo {
   id: string
@@ -15,17 +16,26 @@ interface BreadcrumbItem {
   closable: boolean
   name?: string
 }
+interface MetaType {
+  alwaysShow: boolean
+  hidden: boolean
+  icon: string
+  keepAlive: boolean
+  title: string
+}
 
 interface PermissionMenu {
   id?: string
   label?: string
   path: string
-  type: string
+  routeType: number
+  status: number
   children: PermissionMenu[]
   perm?: string
   index?: string
   disabled?: boolean
   icon?: string
+  meta: MetaType
 }
 
 interface LoginParams {
@@ -36,7 +46,6 @@ interface LoginParams {
 interface InitData {
   id: string
   username: string
-  permissionLists: PermissionMenu[]
 }
 
 export const useAccountStore = defineStore('user', {
@@ -64,14 +73,16 @@ export const useAccountStore = defineStore('user', {
       return state.userInfo
     },
     getMenuList(state): PermissionMenu[] {
-      const filterMenuFn = (node?: PermissionMenu[]): PermissionMenu[] => {
+      const filterMenuFn = (node?: MenuTree[]): PermissionMenu[] => {
         return (
           node
-            ?.filter((item) => item.type === '1')
+            ?.filter((item) => item.status === 1)
             .map((item) => ({
               ...item,
-              children: item.children ? filterMenuFn(item.children) : [],
+              id: `${item.id}`,
+              children: item.children.length > 0 ? filterMenuFn(item.children) : [],
               index: item.path,
+              label: item.name,
             })) || []
         )
       }
@@ -88,31 +99,6 @@ export const useAccountStore = defineStore('user', {
       const dataInfo: InitData = {
         id: '1',
         username: params.username,
-        permissionLists: [
-          {
-            id: '1',
-            label: '主页管理',
-            path: '/dashboard',
-            type: '1',
-            children: [
-              {
-                id: '2',
-                label: '数据看板',
-                path: '/dashboard/home',
-                type: '1',
-                children: [],
-                perm: '',
-                index: '/dashboard/home',
-                disabled: false,
-                icon: '',
-              },
-            ],
-            perm: '',
-            index: '/dashboard',
-            disabled: false,
-            icon: '',
-          },
-        ],
       }
       const { data } = await login(params)
       if (data.code === 200) {
@@ -140,7 +126,6 @@ export const useAccountStore = defineStore('user', {
         this.userInfo.id = dataInfo.id
         this.userInfo.name = dataInfo.username
         this.userInfo.accountNum = dataInfo.username
-        this.permissionList = dataInfo.permissionLists
       }
     },
 
@@ -155,6 +140,18 @@ export const useAccountStore = defineStore('user', {
       this.breadcrumbRecord = this.breadcrumbRecord.filter(
         (item: BreadcrumbItem) => item.name !== tab.name,
       )
+    },
+    async getRouterPermissionList(): Promise<void> {
+      const res = await getMenuOption()
+      console.log(res)
+
+      this.permissionList = res.data?.map((x: MenuTree) => {
+        return {
+          ...x,
+          label: x.name,
+          index: x.path,
+        }
+      })
     },
 
     hasRouterPermission(path: string): boolean {
@@ -172,7 +169,7 @@ export const useAccountStore = defineStore('user', {
       const tempMenu: PermissionMenu[] = []
       const filterMenu = (node?: PermissionMenu[]): void => {
         node?.forEach((item) => {
-          if (item.type === '1') {
+          if (item.status === 1) {
             if (item.path === path) {
               tempMenu.push(...(item.children || []))
             } else if (item.children?.length > 0) {
