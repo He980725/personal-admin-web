@@ -10,14 +10,14 @@ export const login = async (params: LoginParams) => {
     url: `/auth/login`,
     data: params,
   })
-  return res.data
+  return res
 }
 export const logout = async () => {
   const res = await service({
     method: 'post',
     url: `/auth/logout`,
   })
-  return res.data
+  return res
 }
 export const getMenuOption = async () => {
   const res = await service({

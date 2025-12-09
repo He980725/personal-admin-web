@@ -6,13 +6,25 @@ const routers = [
     children: [
       {
         path: 'dashboard',
-        name: 'Dashboard',
+        name: '数据看板',
         redirect: { path: '/dashboard/home' },
         children: [
           {
             path: 'home',
             name: 'Home',
             component: () => import('@/views/Dashboard/Home/HomeIndex.vue'),
+          },
+        ],
+      },
+      {
+        path: 'system',
+        name: '系统管理',
+        redirect: { path: '/system/router-management' },
+        children: [
+          {
+            path: 'router-management',
+            name: '路由管理',
+            component: () => import('@/views/SystemManagement/RouterPage/MenuIndex.vue'),
           },
         ],
       },

@@ -101,3 +101,25 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+/* form 表单 */
+.el-form.el-form-item__label {
+  font-size: 14px;
+}
+.no-error-class {
+  margin-bottom: 0 !important;
+}
+/* input */
+.el-input-group__prepend {
+  padding: 0 10px !important;
+}
+/* drawer */
+.el-drawer__header {
+  padding: 15px 10px !important;
+  margin-bottom: 0px !important;
+}
+.el-drawer__body {
+  padding: 0 10px 15px !important;
+}
+.el-drawer {
+  background-color: #f0f2f5 !important;
+}
